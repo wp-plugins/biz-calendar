@@ -1,0 +1,55 @@
+@CHARSET "UTF-8";
+
+table.bizcal {
+	margin : 10px 0;
+	width: 100%;
+	table-layout: fixed;
+	border-collapse: collapse;
+	border: 1px Silver solid;
+}
+
+table.bizcal th {
+	background-color: WhiteSmoke;
+	text-align:center;
+	border: 1px Silver solid;
+}
+
+
+table.bizcal td {
+	text-align:center;
+	border: 1px Silver solid;
+}
+
+table.bizcal td.holiday {
+	background-color: Pink;
+}
+
+table.bizcal td.eventday {
+	background-color: Aqua;
+}
+
+table.bizcal td.today {
+	font-weight : bold;
+	color: #1e90ff;
+}
+
+
+#biz_calendar p {
+	margin:10px 0;
+}
+
+span.boxholiday{
+	background-color: Pink;
+	border: 1px Silver solid;
+	width: 60px;
+	padding-right:20px;
+	margin-right:10px;
+}
+
+span.boxeventday{
+	background-color: Aqua;
+	border: 1px Silver solid;
+	width: 60px;
+	padding-right:20px;
+	margin-right:10px;
+}
