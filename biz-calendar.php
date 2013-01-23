@@ -3,7 +3,7 @@
  Plugin Name: Biz Calendar
 Plugin URI: http://residentbird.main.jp/bizplugin/
 Description: 営業日・イベントカレンダーをウィジェットに表示するプラグインです。
-Version: 1.3.0
+Version: 1.4.0
 Author:WordPress Biz Plugin
 Author URI: http://residentbird.main.jp/bizplugin/
 */
@@ -19,7 +19,6 @@ class BizCalendarPlugin{
 	var $adminUi;
 
 	public function __construct(){
-		$this->adminUi = new AdminUi($this->option_name);
 		register_activation_hook(__FILE__, array(&$this,'on_activation'));	//プラグイン有効時の処理を設定
 		register_deactivation_hook(__FILE__, array(&$this,'on_deactivation'));
 		add_action( 'admin_init', array(&$this,'on_admin_init') );	//管理画面の初期化
@@ -80,12 +79,13 @@ class BizCalendarPlugin{
 	}
 
 	function on_admin_init() {
-		register_setting($this->option_name, $this->option_name);
+		$this->adminUi = new AdminUi($this->option_name);
+		register_setting($this->option_name, $this->option_name, array ( &$this->adminUi, 'validate' ));
 		$this->adminUi->setUi();
 	}
 
 	public function on_admin_menu() {
-		$page = add_options_page("BizCalendar設定", "BizCalendar設定", 'administrator', __FILE__, array(&$this, 'show_admin_page'));
+		$page = add_options_page("Biz Calendar設定", "Biz Calendar設定", 'administrator', __FILE__, array(&$this, 'show_admin_page'));
 	}
 
 	public function show_admin_page() {
@@ -123,6 +123,13 @@ class AdminUi {
 		add_settings_field('id_eventday_title', 'イベントの説明', array(&$this,'setting_eventday_title'), __FILE__, 'eventday');
 		add_settings_field('id_eventday_url', 'イベントのurl', array(&$this,'setting_eventday_url'), __FILE__, 'eventday');
 		add_settings_field('id_eventdays', 'イベント日', array(&$this,'setting_eventdays'), __FILE__, 'eventday');
+	}
+
+	function validate($input) {
+		$input["holiday_title"] = esc_html($input["holiday_title"]);
+		$input["eventday_title"] = esc_html($input["eventday_title"]);
+		$input["eventday_url"] = esc_url($input["eventday_url"]);
+		return $input; // return validated input
 	}
 
 	function  text_fixed_holiday() {
@@ -222,7 +229,7 @@ class BizCalendarWidget extends WP_Widget {
 	public function __construct() {
 		parent::__construct(
 	 		'BizCalendar', // Base ID
-				'BizCalendar', // Name
+				'Biz Calendar', // Name
 				array( 'description' => __( '営業日・イベントカレンダー', 'text_domain' ), ) // Args
 		);
 	}
@@ -244,21 +251,17 @@ class BizCalendarWidget extends WP_Widget {
 			echo $before_title . $title . $after_title;
 		}
 		$options = get_option( 'bizcalendar_options' );
-		$options["holiday_title"] = esc_html($options["holiday_title"]);
-		$options["eventday_title"] = esc_html($options["eventday_title"]);
-		$holidays = null;
 		if ( isset($options['holiday']) && $options["holiday"] == 'on'){
-			$holidays = $this->getHolidays();
+			$options = $this->getHolidays($options);
 		}
-		include_once('calendar-setting.js');
+		include('calendar-setting.js');
 		echo "<div id='biz_calendar'></div>";
 		echo $after_widget;
 	}
 
-	public function getHolidays(){
-		$options = get_option( 'bizcalendar_options' );
+	public function getHolidays( $options ){
 		if ( $this->hasCache( $options) ){
-			return $options["holiday_cache"];
+			return $options;
 		}
 
 		$year = date('Y');
@@ -278,7 +281,7 @@ class BizCalendarWidget extends WP_Widget {
 
 		$results = file_get_contents($url);
 		if ( !isset($results) ){
-			return array();
+			return $options;
 		}
 		$results = json_decode($results, true);
 		$holidays = array();
@@ -293,7 +296,7 @@ class BizCalendarWidget extends WP_Widget {
 		$options["holiday_cache"] = $holidays;
 		$options["holiday_cache_date"] = date( "Y/m", time());
 		update_option('bizcalendar_options', $options);
-		return $holidays;
+		return $options;
 	}
 
 	private function hasCache($options){

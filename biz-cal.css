@@ -1,11 +1,18 @@
 @CHARSET "UTF-8";
 
+#biz_calendar {
+	max-width: 250px;
+	margin : auto;
+}
+
 table.bizcal {
 	margin : 10px 0;
 	width: 100%;
 	table-layout: fixed;
 	border-collapse: collapse;
 	border: 1px Silver solid;
+	line-height: 1.8em;
+	cursor: default;
 }
 
 table.bizcal th {
@@ -14,10 +21,44 @@ table.bizcal th {
 	border: 1px Silver solid;
 }
 
+table.bizcal th:first-child  {
+	color : red;
+}
+
+table.bizcal th:nth-last-of-type(1)  {
+	color : blue;
+}
 
 table.bizcal td {
 	text-align:center;
 	border: 1px Silver solid;
+}
+
+table.bizcal td.calmonth {
+	text-align:left;
+	font-weight : bold;
+	padding: 2px 7px;
+	border: none;
+}
+
+table.bizcal td.calbtn {
+	border: none;
+	cursor: pointer;
+}
+
+table.bizcal td.downMonth{
+	background: transparent url('./image/down.png') right center no-repeat;
+	overflow:hidden;
+}
+
+table.bizcal td.goToday{
+	background: transparent url('./image/today.png') center center no-repeat;
+	overflow:hidden;
+}
+
+table.bizcal td.upMonth{
+	background: transparent url('./image/up.png') left center no-repeat;
+	overflow:hidden;
 }
 
 table.bizcal td.holiday {

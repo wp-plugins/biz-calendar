@@ -9,14 +9,12 @@ var currentSetting = null;
 
 var bizCalendar = function(){
 	var options = window.bizcalOptions;
-	var holidays = window.bizcalHolidays;
 	var now = new Date();
 
 	var setting = {
 		year : now.getFullYear(),
 		month : now.getMonth() + 1,
-		options : options,
-		holidays: holidays
+		options : options
 	};
 	window.currentSetting = setting;
 	document.getElementById('biz_calendar').innerHTML = getCalendar( setting );
@@ -65,12 +63,12 @@ var getCalendar = function( setting ){
 	}
 
 	//カレンダーのタイトル
-	var title = setting.year + "年" + setting.month + "月";
+	var title = setting.year + "年 " + setting.month + "月";
 	var html = "<table class='bizcal' ><tr>";
-		html += "<td id='downMonth' onclick='downMonth()' title='前の月へ' >＜</td>";
-		html += "<td colspan='4'>" + title + "</td>";
-		html += "<td id='upMonth' onclick='upMonth()' title='次の月へ' >＞</td>";
-		html += "<td id='goToday' onclick='goToday()' title='今月へ' >□</td>";
+		html += "<td class='calmonth' colspan='4'>" + title + "</td>";
+		html += "<td class='calbtn downMonth' onclick='downMonth()' title='前の月へ' ></td>";
+		html += "<td class='calbtn goToday' onclick='goToday()' title='今月へ' ></td>";
+		html += "<td class='calbtn upMonth' onclick='upMonth()' title='次の月へ' ></td>";
 		html += "</tr>";
 
 	//カレンダーの曜日行
@@ -98,7 +96,6 @@ var getCalendar = function( setting ){
 	//説明文
 	html += getHolidayTitle();
 	html += getEventdayTitle();
-
 	return html;
 }
 
@@ -206,7 +203,11 @@ var getDateType = function( date, day ){
 }
 
 var isHoliday = function( fulldate ){
-	if ( currentSetting.options[ "holiday" ] == "on" && currentSetting.holidays[fulldate] != null ){
+	if ( currentSetting.options[ "holiday" ] == "off" ){
+		return false;
+	}
+	holidays = currentSetting.options[ "holiday_cache" ];
+	if ( holidays != undefined && holidays[fulldate] != null){
 		return true;
 	}
 	return false;
