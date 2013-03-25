@@ -3,12 +3,40 @@
  Plugin Name: Biz Calendar
 Plugin URI: http://residentbird.main.jp/bizplugin/
 Description: 営業日・イベントカレンダーをウィジェットに表示するプラグインです。
-Version: 1.4.0
+Version: 1.5.0
 Author:WordPress Biz Plugin
 Author URI: http://residentbird.main.jp/bizplugin/
 */
 
+include_once "admin-ui.php";
 new BizCalendarPlugin();
+
+class BC
+{
+	const SHORTCODE = "showpostlist";
+	const OPTIONS = "bizcalendar_options";
+
+	public static function get_option(){
+		return get_option(self::OPTIONS);
+	}
+
+	public static function update_option( $options ){
+		if ( empty($options)){
+			return;
+		}
+		update_option(self::OPTIONS, $options);
+	}
+
+	public static function enqueue_css_js(){
+		wp_enqueue_style('biz-cal-style', plugins_url('biz-cal.css', __FILE__ ));
+		wp_enqueue_script('biz-cal-script', plugins_url('calendar.js', __FILE__ ), array('jquery'));
+	}
+
+	public static function localize_js(){
+		wp_localize_script( 'biz-cal-script', 'bizcalOptions', self::get_option() );
+		wp_localize_script( 'biz-cal-script', 'bizcalplugindir', plugin_dir_url( __FILE__ ) );
+	}
+}
 
 /**
  * プラグイン本体
@@ -19,13 +47,11 @@ class BizCalendarPlugin{
 	var $adminUi;
 
 	public function __construct(){
-		register_activation_hook(__FILE__, array(&$this,'on_activation'));	//プラグイン有効時の処理を設定
-		register_deactivation_hook(__FILE__, array(&$this,'on_deactivation'));
-		add_action( 'admin_init', array(&$this,'on_admin_init') );	//管理画面の初期化
-		add_action( 'admin_menu', array(&$this, 'on_admin_menu'));			//管理画面にメニューを追加
-		add_action( 'wp_print_styles', array(&$this,'on_print_styles'));				//cssの設定（管理画面以外)
-		add_action( 'wp_print_scripts', array(&$this,'on_print_scripts'));				//javascriptの設定（管理画面以外)
-		add_action( 'widgets_init', create_function( '', 'register_widget( "bizcalendarwidget" );' ) ); //ウィジェットの登録
+		register_activation_hook(__FILE__, array(&$this,'on_activation'));
+		add_action( 'admin_init', array(&$this,'on_admin_init') );
+		add_action( 'admin_menu', array(&$this, 'on_admin_menu'));
+		add_action( 'wp_enqueue_scripts', array(&$this,'on_enqueue_scripts'));
+		add_action( 'widgets_init', create_function( '', 'register_widget( "bizcalendarwidget" );' ) );
 	}
 
 	function on_activation() {
@@ -48,40 +74,24 @@ class BizCalendarPlugin{
 					"event_url" =>"",
 					"holiday_cache" =>"",
 					"holiday_cache_date" =>"",
+					"month_limit" =>"制限なし",
+					"nextmonthlimit" =>"12",
+					"prevmonthlimit" =>"12",
 			);
 			update_option($this->option_name, $arr);
 		}
 	}
 
-	function on_deactivation(){
-		unregister_setting($this->option_name, $this->option_name );
-		//delete_option($this->option_name);
-		wp_deregister_style('biz-cal-style');
-	}
-
-	function on_print_scripts() {
-		$path = WP_PLUGIN_DIR . '/biz-calendar/calendar.js';
-		if(file_exists($path)){
-			$url = plugins_url('calendar.js', __FILE__);
-			wp_register_script('biz-cal-script', $url);
-// 			wp_enqueue_script('biz-cal-script');
-			wp_enqueue_script('biz-cal-script', $path, array('jquery'), false, true);
+	function on_enqueue_scripts() {
+		if ( is_admin() ) {
+			return;
 		}
-	}
-
-	function on_print_styles() {
-		$path = WP_PLUGIN_DIR . '/biz-calendar/biz-cal.css';
-		if(file_exists($path)){
-			$url = plugins_url('biz-cal.css', __FILE__);
-			wp_register_style('biz-cal-style', $url);
-			wp_enqueue_style('biz-cal-style');
-		}
+		BC::enqueue_css_js();
+		BC::localize_js();
 	}
 
 	function on_admin_init() {
-		$this->adminUi = new AdminUi($this->option_name);
-		register_setting($this->option_name, $this->option_name, array ( &$this->adminUi, 'validate' ));
-		$this->adminUi->setUi();
+		$this->adminUi = new AdminUi( __FILE__ );
 	}
 
 	public function on_admin_menu() {
@@ -95,131 +105,6 @@ class BizCalendarPlugin{
 	}
 }
 
-
-class AdminUi {
-	var $option_name;
-
-	public function __construct( $option ){
-		$this->option_name = $option;
-	}
-
-	public function setUi(){
-		add_settings_section('fixed_holiday', '定休日', array(&$this,'text_fixed_holiday'), __FILE__);
-		add_settings_field('id_holiday_title', '定休日の説明', array(&$this,'setting_holiday_title'), __FILE__, 'fixed_holiday');
-		add_settings_field('id_chk_sun', '日曜日', array(&$this,'setting_chk_sun'), __FILE__, 'fixed_holiday');
-		add_settings_field('id_chk_mon', '月曜日', array(&$this,'setting_chk_mon'), __FILE__, 'fixed_holiday');
-		add_settings_field('id_chk_tue', '火曜日', array(&$this,'setting_chk_tue'), __FILE__, 'fixed_holiday');
-		add_settings_field('id_chk_wed', '水曜日', array(&$this,'setting_chk_wed'), __FILE__, 'fixed_holiday');
-		add_settings_field('id_chk_thu', '木曜日', array(&$this,'setting_chk_thu'), __FILE__, 'fixed_holiday');
-		add_settings_field('id_chk_fri', '金曜日', array(&$this,'setting_chk_fri'), __FILE__, 'fixed_holiday');
-		add_settings_field('id_chk_sat', '土曜日', array(&$this,'setting_chk_sat'), __FILE__, 'fixed_holiday');
-		add_settings_field('id_chk_holiday', '祝日を定休日にする', array(&$this,'setting_chk_holiday'), __FILE__, 'fixed_holiday');
-
-		add_settings_section('temp_holiday', '臨時休営業日', array(&$this,'text_temp_holiday'), __FILE__);
-		add_settings_field('id_temp_holidays', '臨時休業日', array(&$this,'setting_temp_holidays'), __FILE__, 'temp_holiday');
-		add_settings_field('id_temp_weekdays', '臨時営業日', array(&$this,'setting_temp_weekdays'), __FILE__, 'temp_holiday');
-
-		add_settings_section('eventday', 'イベント', array(&$this,'text_eventday'), __FILE__);
-		add_settings_field('id_eventday_title', 'イベントの説明', array(&$this,'setting_eventday_title'), __FILE__, 'eventday');
-		add_settings_field('id_eventday_url', 'イベントのurl', array(&$this,'setting_eventday_url'), __FILE__, 'eventday');
-		add_settings_field('id_eventdays', 'イベント日', array(&$this,'setting_eventdays'), __FILE__, 'eventday');
-	}
-
-	function validate($input) {
-		$input["holiday_title"] = esc_html($input["holiday_title"]);
-		$input["eventday_title"] = esc_html($input["eventday_title"]);
-		$input["eventday_url"] = esc_url($input["eventday_url"]);
-		return $input; // return validated input
-	}
-
-	function  text_fixed_holiday() {
-		echo '<p>定休日として設定する曜日をチェックします。<br>「祝日を定休日にする」にチェックすると、祝日が自動的に定休日になります。</p>';
-	}
-
-	function  text_temp_holiday() {
-		echo '<p>臨時営業日・休業日を設定します。<br>YYYY-MM-DD (例 2001-01-01)の形式で登録します。複数登録する場合は改行してください。登録できる件数の上限はありません。</p>';
-	}
-
-	function  text_eventday() {
-		echo '<p>イベントの説明、url、日にちを登録します。<br>イベント日は、YYYY-MM-DD (例 2001-01-01)の形式で登録します。複数登録する場合は改行してください。登録できる件数の上限はありません。</p>';
-	}
-
-	function setting_chk_sun() {
-		$this->setting_chk( "sun" );
-	}
-
-	function setting_chk_mon() {
-		$this->setting_chk( "mon" );
-	}
-
-	function setting_chk_tue() {
-		$this->setting_chk( "tue" );
-	}
-
-	function setting_chk_wed() {
-		$this->setting_chk( "wed" );
-	}
-
-	function setting_chk_thu() {
-		$this->setting_chk( "thu" );
-	}
-
-	function setting_chk_fri() {
-		$this->setting_chk( "fri" );
-	}
-
-	function setting_chk_sat() {
-		$this->setting_chk( "sat" );
-	}
-
-	function setting_chk_holiday() {
-		$this->setting_chk( "holiday" );
-	}
-
-	function setting_chk( $id ) {
-		$options = get_option($this->option_name);
-		$checked = (isset($options[$id]) && $options[$id]) ? $checked = ' checked="checked" ': "";
-		$name = $this->option_name. "[$id]";
-
-		echo "<input ".$checked." id='id_".$id."' name='".$name."' type='checkbox' />";
-	}
-
-	function setting_inputtext( $name, $size) {
-		$options = get_option($this->option_name);
-		$value = esc_html( $options[$name] );
-		echo "<input id='{$name}' name='bizcalendar_options[{$name}]' size='{$size}' type='text' value='{$value}' />";
-	}
-
-	function setting_holiday_title() {
-		$this->setting_inputtext("holiday_title", 40);
-	}
-
-	function setting_eventday_title() {
-		$this->setting_inputtext("eventday_title", 40);
-	}
-
-	function setting_eventday_url() {
-		$this->setting_inputtext("eventday_url", 60);
-	}
-
-	function setting_textarea( $name ) {
-		$options = get_option($this->option_name);
-		$value = esc_html( $options[ $name ] );
-		echo "<textarea id='{$name}' name='bizcalendar_options[{$name}]' rows='7' cols='15'>{$value}</textarea>";
-	}
-
-	function setting_temp_holidays() {
-		$this->setting_textarea("temp_holidays");
-	}
-
-	function setting_temp_weekdays() {
-		$this->setting_textarea("temp_weekdays");
-	}
-
-	function setting_eventdays() {
-		$this->setting_textarea("eventdays");
-	}
-}
 
 class BizCalendarWidget extends WP_Widget {
 
@@ -254,7 +139,6 @@ class BizCalendarWidget extends WP_Widget {
 		if ( isset($options['holiday']) && $options["holiday"] == 'on'){
 			$options = $this->getHolidays($options);
 		}
-		include('calendar-setting.js');
 		echo "<div id='biz_calendar'></div>";
 		echo $after_widget;
 	}
