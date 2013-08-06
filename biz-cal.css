@@ -18,6 +18,7 @@ table.bizcal th {
 	background-color: WhiteSmoke;
 	text-align:center;
 	border: 1px Silver solid;
+	padding : 2px;
 }
 
 table.bizcal th:first-child  {
@@ -31,6 +32,7 @@ table.bizcal th:nth-last-of-type(1)  {
 table.bizcal td {
 	text-align:center;
 	border: 1px Silver solid;
+	padding : 2px;
 }
 
 table.bizcal td.calmonth {
