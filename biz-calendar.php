@@ -3,12 +3,12 @@
  Plugin Name: Biz Calendar
 Plugin URI: http://residentbird.main.jp/bizplugin/
 Description: 営業日・イベントカレンダーをウィジェットに表示するプラグインです。
-Version: 1.5.0
+Version: 1.5.1
 Author:WordPress Biz Plugin
 Author URI: http://residentbird.main.jp/bizplugin/
 */
 
-include_once "admin-ui.php";
+include_once ( dirname(__FILE__) . "/admin-ui.php" );
 new BizCalendarPlugin();
 
 class BC
@@ -101,7 +101,7 @@ class BizCalendarPlugin{
 	public function show_admin_page() {
 		$file = __FILE__;
 		$option_name = $this->option_name;
-		include_once('admin-view.php');
+		include_once( dirname(__FILE__) . '/admin-view.php');
 	}
 }
 
