@@ -3,16 +3,17 @@
  Plugin Name: Biz Calendar
 Plugin URI: http://residentbird.main.jp/bizplugin/
 Description: 営業日・イベントカレンダーをウィジェットに表示するプラグインです。
-Version: 1.5.0
+Version: 1.6.0
 Author:WordPress Biz Plugin
 Author URI: http://residentbird.main.jp/bizplugin/
 */
 
-include_once "admin-ui.php";
+include_once ( dirname(__FILE__) . "/admin-ui.php" );
 new BizCalendarPlugin();
 
 class BC
 {
+	const VERSION = "1.6.0";
 	const SHORTCODE = "showpostlist";
 	const OPTIONS = "bizcalendar_options";
 
@@ -28,8 +29,8 @@ class BC
 	}
 
 	public static function enqueue_css_js(){
-		wp_enqueue_style('biz-cal-style', plugins_url('biz-cal.css', __FILE__ ));
-		wp_enqueue_script('biz-cal-script', plugins_url('calendar.js', __FILE__ ), array('jquery'));
+		wp_enqueue_style('biz-cal-style', plugins_url('biz-cal.css', __FILE__ ), array(), self::VERSION);
+		wp_enqueue_script('biz-cal-script', plugins_url('calendar.js', __FILE__ ), array('jquery'), self::VERSION );
 	}
 
 	public static function localize_js(){
@@ -101,7 +102,7 @@ class BizCalendarPlugin{
 	public function show_admin_page() {
 		$file = __FILE__;
 		$option_name = $this->option_name;
-		include_once('admin-view.php');
+		include_once( dirname(__FILE__) . '/admin-view.php');
 	}
 }
 
@@ -148,9 +149,9 @@ class BizCalendarWidget extends WP_Widget {
 			return $options;
 		}
 
-		$year = date('Y');
+		$year = date_i18n('Y');
 		//1-3月は前年の祝日を取得する
-		$mon = date('n');
+		$mon = date_i18n('n');
 		if ( $mon < 4){
 			$year -= 1;
 		}
@@ -178,7 +179,7 @@ class BizCalendarWidget extends WP_Widget {
 
 		//キャッシュを更新する
 		$options["holiday_cache"] = $holidays;
-		$options["holiday_cache_date"] = date( "Y/m", time());
+		$options["holiday_cache_date"] = date_i18n( "Y/m");
 		update_option('bizcalendar_options', $options);
 		return $options;
 	}
@@ -187,7 +188,7 @@ class BizCalendarWidget extends WP_Widget {
 		if( !isset($options["holiday_cache"]) || !isset($options["holiday_cache_date"])){
 			return false;
 		}
-		if ( $options["holiday_cache_date"] != date( "Y/m", time()) ){
+		if ( $options["holiday_cache_date"] != date_i18n( "Y/m") ){
 			return false;
 		}
 		return true;

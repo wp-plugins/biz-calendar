@@ -3,8 +3,8 @@ Contributors: WordPress BizPlugin
 Donate link:
 Tags: calendar,event,widget
 Requires at least: 3.4
-Tested up to: 3.5
-Stable tag: 1.5.0
+Tested up to: 3.8
+Stable tag: 1.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,6 +37,12 @@ Biz Calendarは、営業日・イベントカレンダーをウィジェット�
 2. Admin page
 
 == Changelog ==
+
+= 1.6.0 =
+* カレンダーのデザインを変更しました
+
+= 1.5.1 =
+* WordPress3.6に対応しました
 
 = 1.5.0 =
 * カレンダーの月送り範囲を設定する機能を追加しました
