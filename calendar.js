@@ -205,22 +205,7 @@ var getDateType = function(date, day) {
 		return "HOLIDAY";
 	}
 
-	// 祝日
-	if (isHoliday(fulldate)) {
-		return "HOLIDAY";
-	}
 	return "WEEKDAY";
-}
-
-var isHoliday = function(fulldate) {
-	if (currentSetting.options["holiday"] == "off") {
-		return false;
-	}
-	holidays = currentSetting.options["holiday_cache"];
-	if (holidays != undefined && holidays[fulldate] != null) {
-		return true;
-	}
-	return false;
 }
 
 var getFormatDate = function(y, m, d) {

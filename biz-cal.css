@@ -1,96 +1,97 @@
+@charset "UTF-8";
 #biz_calendar {
-	max-width: 250px;
-	margin : auto;
+  max-width: 250px;
+  margin: auto;
+  font-family: 'ヒラギノ角ゴ Pro W3', 'Hiragino Kaku Gothic Pro', 'メイリオ', Meiryo, 'ＭＳ Ｐゴシック', sans-serif;
 }
-
-table.bizcal {
-	margin : 10px 0;
-	width: 100%;
-	table-layout: fixed;
-	border-collapse: collapse;
-	border: 1px Silver solid;
-	line-height: 1.6em;
-	cursor: default;
-	vertical-align: middle;
-}
-
-table.bizcal th {
-	background-color: WhiteSmoke;
-	text-align:center;
-	border: 1px Silver solid;
-}
-
-table.bizcal th:first-child  {
-	color : red;
-}
-
-table.bizcal th:nth-last-of-type(1)  {
-	color : blue;
-}
-
-table.bizcal td {
-	text-align:center;
-	border: 1px Silver solid;
-}
-
-table.bizcal td.calmonth {
-	text-align:left;
-	font-weight : bold;
-	padding: 2px 7px;
-	border: none;
-}
-
-table.bizcal td.calbtn {
-	border: none;
-	cursor: pointer;
-}
-
-table.bizcal td img {
-	vertical-align: middle;
-}
-
-.down-img{
-	text-align:right !important;
-}
-
-.today-img{
-	text-align:center !important;
-}
-
-.up-img{
-	text-align:left !important;
-}
-
-table.bizcal td.holiday {
-	background-color: Pink;
-}
-
-table.bizcal td.eventday {
-	background-color: Aqua;
-}
-
-table.bizcal td.today {
-	font-weight : bold;
-	color: #1e90ff;
-}
-
-
 #biz_calendar p {
-	margin:10px 0;
+  margin: 10px 0;
+}
+#biz_calendar p span.boxholiday {
+  background-color: #f63c9f;
+  padding-left: 25px;
+  margin-right: 10px;
+}
+#biz_calendar p span.boxeventday {
+  background-color: #64bdeb;
+  padding-left: 25px;
+  margin-right: 10px;
 }
 
-span.boxholiday{
-	background-color: Pink;
-	border: 1px Silver solid;
-	width: 60px;
-	padding-right:20px;
-	margin-right:10px;
+#biz_calendar table.bizcal {
+  margin: 10px 0;
+  width: 100%;
+  background-color: #ffffff;
+  table-layout: fixed;
+  border: 1px #b5b5b6 solid;
+  line-height: 1.6;
+  cursor: default;
+  vertical-align: middle;
 }
-
-span.boxeventday{
-	background-color: Aqua;
-	border: 1px Silver solid;
-	width: 60px;
-	padding-right:20px;
-	margin-right:10px;
+#biz_calendar table.bizcal th {
+  text-align: center;
+  border-width: 0;
+  padding: 2px;
+  color: #000000;
+  background-color: #dcdddd;
+  *zoom: 1;
+  filter: progid:DXImageTransform.Microsoft.gradient(gradientType=0, startColorstr='#FFE9EAEA', endColorstr='#FFDCDDDD');
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #e9eaea), color-stop(100%, #dcdddd));
+  background-image: -webkit-linear-gradient(#e9eaea 0%, #dcdddd 100%);
+  background-image: -moz-linear-gradient(#e9eaea 0%, #dcdddd 100%);
+  background-image: -o-linear-gradient(#e9eaea 0%, #dcdddd 100%);
+  background-image: linear-gradient(#e9eaea 0%, #dcdddd 100%);
+}
+#biz_calendar table.bizcal th:first-child {
+  color: red;
+}
+#biz_calendar table.bizcal th:nth-last-of-type(1) {
+  color: blue;
+}
+#biz_calendar table.bizcal td {
+  text-align: center;
+  border-width: 0;
+  padding: 2px;
+  color: #000000;
+}
+#biz_calendar table.bizcal .calmonth {
+  text-align: left;
+  font-weight: bold;
+  padding: 2px 7px;
+  border: none;
+}
+#biz_calendar table.bizcal .calbtn {
+  border: none;
+  cursor: pointer;
+}
+#biz_calendar table.bizcal .holiday {
+  background-color: #f63c9f;
+  color: #ffffff;
+}
+#biz_calendar table.bizcal .eventday {
+  background-color: #64bdeb;
+  color: #ffffff;
+}
+#biz_calendar table.bizcal .eventday a {
+  color: #ffffff;
+}
+#biz_calendar table.bizcal .today {
+  font-weight: bold;
+  color: black;
+}
+#biz_calendar table.bizcal .today a {
+  font-weight: bold;
+  color: black;
+}
+#biz_calendar table.bizcal img {
+  vertical-align: middle;
+}
+#biz_calendar table.bizcal .down-img {
+  text-align: right;
+}
+#biz_calendar table.bizcal .today-img {
+  text-align: center;
+}
+#biz_calendar table.bizcal .up-img {
+  text-align: left;
 }
