@@ -3,8 +3,8 @@ Contributors: WordPress BizPlugin
 Donate link:
 Tags: calendar,event,widget
 Requires at least: 3.4
-Tested up to: 3.8
-Stable tag: 1.6.0
+Tested up to: 4.0.1
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,8 +18,6 @@ Biz Calendarは、営業日・イベントカレンダーをウィジェット�
 = 特徴 =
 
 * 曜日を指定して定休日に設定できます
-* 祝日を自動的に定休日に設定できます
-    * Google calendar APIから祝日情報を取得しています。Google calendar APIが使用できない環境では利用できません
 * 臨時休業日・臨時営業日を登録できます
 * イベント開催日、urlを設定できます
 * ページを移動せずに翌月・前月のカレンダーを表示できます
@@ -37,6 +35,9 @@ Biz Calendarは、営業日・イベントカレンダーをウィジェット�
 2. Admin page
 
 == Changelog ==
+
+= 1.7.0 =
+* Google Calendar API Ver.2終了に伴い、祝日を自動的に定休日に設定する機能を廃止しました
 
 = 1.6.0 =
 * カレンダーのデザインを変更しました

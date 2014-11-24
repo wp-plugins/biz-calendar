@@ -3,7 +3,7 @@
  Plugin Name: Biz Calendar
 Plugin URI: http://residentbird.main.jp/bizplugin/
 Description: 営業日・イベントカレンダーをウィジェットに表示するプラグインです。
-Version: 1.6.0
+Version: 1.6.1
 Author:WordPress Biz Plugin
 Author URI: http://residentbird.main.jp/bizplugin/
 */
@@ -13,7 +13,7 @@ new BizCalendarPlugin();
 
 class BC
 {
-	const VERSION = "1.6.0";
+	const VERSION = "1.7.0";
 	const SHORTCODE = "showpostlist";
 	const OPTIONS = "bizcalendar_options";
 
@@ -68,13 +68,10 @@ class BizCalendarPlugin{
 					"thu" => "",
 					"fri" => "",
 					"sat" => "on",
-					"holiday" => "on",
 					"temp_holidays" =>"2013-01-02\n2013-01-03\n",
 					"temp_weekdays" =>"",
 					"eventdays" =>"",
 					"event_url" =>"",
-					"holiday_cache" =>"",
-					"holiday_cache_date" =>"",
 					"month_limit" =>"制限なし",
 					"nextmonthlimit" =>"12",
 					"prevmonthlimit" =>"12",
@@ -137,61 +134,8 @@ class BizCalendarWidget extends WP_Widget {
 			echo $before_title . $title . $after_title;
 		}
 		$options = get_option( 'bizcalendar_options' );
-		if ( isset($options['holiday']) && $options["holiday"] == 'on'){
-			$options = $this->getHolidays($options);
-		}
 		echo "<div id='biz_calendar'></div>";
 		echo $after_widget;
-	}
-
-	public function getHolidays( $options ){
-		if ( $this->hasCache( $options) ){
-			return $options;
-		}
-
-		$year = date_i18n('Y');
-		//1-3月は前年の祝日を取得する
-		$mon = date_i18n('n');
-		if ( $mon < 4){
-			$year -= 1;
-		}
-
-		$url = sprintf(
-				'http://www.google.com/calendar/feeds/%s/public/full-noattendees?start-min=%s&start-max=%s&max-results=%d&alt=json' ,
-				'outid3el0qkcrsuf89fltf7a4qbacgt9@import.calendar.google.com' , // 'japanese@holiday.calendar.google.com' ,
-				$year.'-04-01' ,  // 取得開始日
-				($year + 1).'-03-31' ,  // 取得終了日
-				50              // 最大取得数
-		);
-
-		$results = file_get_contents($url);
-		if ( !isset($results) ){
-			return $options;
-		}
-		$results = json_decode($results, true);
-		$holidays = array();
-		foreach ($results['feed']['entry'] as $val ) {
-			$date  = $val['gd$when'][0]['startTime'];
-			$title = $val['title']['$t'];
-			$holidays[$date] = $title;
-		}
-		ksort($holidays);
-
-		//キャッシュを更新する
-		$options["holiday_cache"] = $holidays;
-		$options["holiday_cache_date"] = date_i18n( "Y/m");
-		update_option('bizcalendar_options', $options);
-		return $options;
-	}
-
-	private function hasCache($options){
-		if( !isset($options["holiday_cache"]) || !isset($options["holiday_cache_date"])){
-			return false;
-		}
-		if ( $options["holiday_cache_date"] != date_i18n( "Y/m") ){
-			return false;
-		}
-		return true;
 	}
 
 	/**
