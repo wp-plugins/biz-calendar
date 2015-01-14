@@ -3,8 +3,8 @@
  Plugin Name: Biz Calendar
 Plugin URI: http://residentbird.main.jp/bizplugin/
 Description: 営業日・イベントカレンダーをウィジェットに表示するプラグインです。
-Version: 1.7.0
-Author:WordPress Biz Plugin
+Version: 2.0.0
+Author:Hideki Tanaka
 Author URI: http://residentbird.main.jp/bizplugin/
 */
 
@@ -13,19 +13,25 @@ new BizCalendarPlugin();
 
 class BC
 {
-	const VERSION = "1.7.0";
+	const VERSION = "2.0.0";
 	const SHORTCODE = "showpostlist";
 	const OPTIONS = "bizcalendar_options";
+	const NATIONAL_HOLIDAY = "biz_national_holiday";
 
 	public static function get_option(){
 		return get_option(self::OPTIONS);
 	}
 
+	public static function get_national_holiday(){
+		return get_option(self::NATIONAL_HOLIDAY);
+	}
+
 	public static function update_option( $options ){
-		if ( empty($options)){
-			return;
-		}
 		update_option(self::OPTIONS, $options);
+	}
+
+	public static function update_national_holiday( $options ){
+		update_option(self::NATIONAL_HOLIDAY, $options);
 	}
 
 	public static function enqueue_css_js(){
@@ -34,8 +40,19 @@ class BC
 	}
 
 	public static function localize_js(){
-		wp_localize_script( 'biz-cal-script', 'bizcalOptions', self::get_option() );
-		wp_localize_script( 'biz-cal-script', 'bizcalplugindir', plugin_dir_url( __FILE__ ) );
+		$option = self::get_option();
+		$option["plugindir"] = plugin_dir_url( __FILE__ );
+		$nh= self::get_national_holiday();
+		$option["national_holiday"] = $nh["national_holiday"];
+		wp_localize_script( 'biz-cal-script', 'bizcalOptions', $option );
+	}
+
+	public static function enqueue_admin_js(){
+		wp_enqueue_script( 'biz-cal-admin-js', plugins_url('upload-holidays.js', __FILE__ ), array( 'jquery' ), self::VERSION, true );
+		wp_localize_script( 'biz-cal-admin-js', 'bizcalAjax', array(
+				'ajaxurl' => admin_url('admin-ajax.php'),
+				'action' => 'upload_holidays',
+		));
 	}
 }
 
@@ -52,12 +69,13 @@ class BizCalendarPlugin{
 		add_action( 'admin_init', array(&$this,'on_admin_init') );
 		add_action( 'admin_menu', array(&$this, 'on_admin_menu'));
 		add_action( 'wp_enqueue_scripts', array(&$this,'on_enqueue_scripts'));
+		add_action( 'wp_ajax_upload_holidays', array(&$this,'upload_holidays') );
 		add_action( 'widgets_init', create_function( '', 'register_widget( "bizcalendarwidget" );' ) );
 	}
 
 	function on_activation() {
-		$tmp = get_option($this->option_name);
-		if(!is_array($tmp)) {
+		$option = BC::get_option();
+		if( !is_array( $option ) ){
 			$arr = array(
 					"holiday_title" => "定休日",
 					"eventday_title" => "イベント開催日",
@@ -68,6 +86,7 @@ class BizCalendarPlugin{
 					"thu" => "",
 					"fri" => "",
 					"sat" => "on",
+					"holiday" => "on",
 					"temp_holidays" =>"2013-01-02\n2013-01-03\n",
 					"temp_weekdays" =>"",
 					"eventdays" =>"",
@@ -76,7 +95,16 @@ class BizCalendarPlugin{
 					"nextmonthlimit" =>"12",
 					"prevmonthlimit" =>"12",
 			);
-			update_option($this->option_name, $arr);
+			BC::update_option( $arr );
+		}
+		$nh = BC::get_national_holiday();
+		if( !is_array( $nh ) ){
+			$arr = array(
+					"national_holiday" => "",
+					"file_name" => "",
+					"update" => "",
+			);
+			BC::update_national_holiday( $arr );
 		}
 	}
 
@@ -89,6 +117,7 @@ class BizCalendarPlugin{
 	}
 
 	function on_admin_init() {
+		BC::enqueue_admin_js();
 		$this->adminUi = new AdminUi( __FILE__ );
 	}
 
@@ -101,8 +130,71 @@ class BizCalendarPlugin{
 		$option_name = $this->option_name;
 		include_once( dirname(__FILE__) . '/admin-view.php');
 	}
-}
 
+	function upload_holidays() {
+		nocache_headers();
+		header( "Content-Type: application/json; charset=$charset" );
+		echo json_encode( $this->import_holidays() );
+		die();
+	}
+
+	private function import_holidays(){
+		$result = new stdClass();
+		if ( $_FILES['holidays-file']['error'] != UPLOAD_ERR_OK ){
+			$result->message = "ファイルアップロードエラーが発生しました";
+			return $result;
+		}
+		if ( $_FILES['holidays-file']['size'] == 0 || $_FILES['holidays-file']['size'] > 200000 ){
+			$result->message = "不正なファイルです";
+			return $result;
+		}
+		if ( $_FILES['holidays-file']['type'] != "application/zip" ){
+			$result->message = "不正なファイルです";
+			return $result;
+		}
+		$content = file_get_contents( $_FILES['holidays-file']['tmp_name'] );
+		if ( empty( $content)){
+			$result->message = "不正なファイルです";
+			return $result;
+		}
+		$file_name = $_FILES['holidays-file']['name'];
+		if ( $file_name == "sample-holidays.zip" ){
+			$result->message = "ファイルアップロードが利用できます";
+			return $result;
+		}
+		$key = $_FILES['holidays-file']['name'];
+		for ( $i = 0; $i <= strlen($content); $i++ ){
+			$key .= $i;
+		}
+		$content = base64_decode($content);
+		$content = $content^$key;
+		$content = str_replace( "/\R/", "\n", $content);
+		$holidays = array_filter( explode("\n", $content), array(&$this, 'filter') );
+		if ( !is_array( $holidays) || count( $holidays ) < 10 || count( $holidays ) > 100 ){
+			$result->message = "不正なファイルです";
+			return $result;
+		}
+		$nh = BC::get_national_holiday();
+		$nh['national_holiday'] = $holidays;
+		$nh['file_name'] = $file_name;
+		BC::update_national_holiday($nh);
+		$op = BC::get_option();
+		$op["holiday"] = "on";
+		BC::update_option( $op );
+		$result->message = "祝日ファイルの登録に成功しました";
+		return $result;
+	}
+
+	function filter($var){
+		if ( empty($var) || strlen($var) == 0 ){
+			return false;
+		}
+		if ( ! preg_match('/^[0-9\-]{10}$/', $var) ){
+			return false;
+		}
+		return true;
+	}
+}
 
 class BizCalendarWidget extends WP_Widget {
 

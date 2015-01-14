@@ -21,6 +21,7 @@ class AdminUi {
 		add_settings_field('id_chk_thu', '木曜日', array(&$this,'setting_chk_thu'), $this->file_path, 'fixed_holiday');
 		add_settings_field('id_chk_fri', '金曜日', array(&$this,'setting_chk_fri'), $this->file_path, 'fixed_holiday');
 		add_settings_field('id_chk_sat', '土曜日', array(&$this,'setting_chk_sat'), $this->file_path, 'fixed_holiday');
+		add_settings_field('id_chk_holiday', '祝日を定休日にする', array(&$this,'setting_chk_holiday'), $this->file_path, 'fixed_holiday');
 
 		add_settings_section('temp_holiday', '臨時休営業日', array(&$this,'text_temp_holiday'), $this->file_path);
 		add_settings_field('id_temp_holidays', '臨時休業日', array(&$this,'setting_temp_holidays'), $this->file_path, 'temp_holiday');
@@ -44,7 +45,7 @@ class AdminUi {
 	}
 
 	function  text_fixed_holiday() {
-		echo '<p>定休日として設定する曜日をチェックします。<br>「祝日を定休日にする」にチェックすると、祝日が自動的に定休日になります。</p>';
+		echo '<p>定休日として設定する曜日をチェックします。「祝日を定休日にする」には祝日ファイルの登録が必要です</p>';
 	}
 
 	function  text_temp_holiday() {
@@ -86,6 +87,10 @@ class AdminUi {
 
 	function setting_chk_sat() {
 		$this->setting_chk( "sat" );
+	}
+
+	function setting_chk_holiday() {
+		$this->setting_chk( "holiday" );
 	}
 
 	function setting_chk( $id ) {
