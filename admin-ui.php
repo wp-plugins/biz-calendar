@@ -45,7 +45,7 @@ class AdminUi {
 	}
 
 	function  text_fixed_holiday() {
-		echo '<p>定休日として設定する曜日をチェックします。<br>「祝日を定休日にする」にチェックすると、祝日が自動的に定休日になります。</p>';
+		echo '<p>定休日として設定する曜日をチェックします。「祝日を定休日にする」には祝日ファイルの登録が必要です</p>';
 	}
 
 	function  text_temp_holiday() {

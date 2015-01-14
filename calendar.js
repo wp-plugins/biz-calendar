@@ -70,7 +70,7 @@ var getCalendar = function(setting) {
 	var html = "<table class='bizcal' ><tr>";
 	html += "<td class='calmonth' colspan='4'>" + title + "</td>";
 	html += getPrevMonthTag();
-	html += "<td class='calbtn today-img' onclick='goToday()' title='今月へ' ><img src='" + bizcalplugindir + "image/today.png' ></td>";
+	html += "<td class='calbtn today-img' onclick='goToday()' title='今月へ' ><img src='" + currentSetting.options.plugindir + "image/today.png' ></td>";
 	html += getNextMonthTag();
 	html += "</tr>";
 
@@ -213,12 +213,17 @@ var getDateType = function(date, day) {
 }
 
 var isHoliday = function(fulldate) {
-	if (currentSetting.options["holiday"] == "off") {
+	if (currentSetting.options["holiday"] == undefined || currentSetting.options["holiday"] == "off") {
 		return false;
 	}
-	holidays = currentSetting.options["holiday_cache"];
-	if (holidays != undefined && holidays[fulldate] != null) {
-		return true;
+	var holidays = currentSetting.options["national_holiday"];
+	if (holidays == undefined ){
+		return false;
+	}
+	for ( var i = 0; i < holidays.length; i++){
+		if ( holidays[i] == fulldate){
+			return true;
+		}
 	}
 	return false;
 }
@@ -241,7 +246,7 @@ var getStartDayOfMonth = function(year, month) {
 
 var getPrevMonthTag = function() {
 	var limit = currentSetting.options["month_limit"];
-	var tag = "<td class='calbtn down-img' onclick='downMonth()' title='前の月へ' ><img src='" + bizcalplugindir + "image/down.png' ></td>";
+	var tag = "<td class='calbtn down-img' onclick='downMonth()' title='前の月へ' ><img src='" + currentSetting.options.plugindir + "image/down.png' ></td>";
 	if (limit == undefined || limit == "制限なし") {
 		return tag;
 	}
@@ -272,14 +277,14 @@ var getPrevMonthTag = function() {
 	}
 
 	if (!can_move) {
-		tag = "<td class='calbtn down-img' ><img src='" + bizcalplugindir + "image/down-limit.png' ></td>";
+		tag = "<td class='calbtn down-img' ><img src='" + currentSetting.options.plugindir + "image/down-limit.png' ></td>";
 	}
 	return tag;
 }
 
 var getNextMonthTag = function() {
 	var limit = currentSetting.options["month_limit"];
-	var tag = "<td class='calbtn up-img' onclick='upMonth()' title='次の月へ' ><img src='" + bizcalplugindir + "image/up.png' ></td>";
+	var tag = "<td class='calbtn up-img' onclick='upMonth()' title='次の月へ' ><img src='" + currentSetting.options.plugindir + "image/up.png' ></td>";
 	if (limit == undefined || limit == "制限なし") {
 		return tag;
 	}
@@ -310,7 +315,7 @@ var getNextMonthTag = function() {
 	}
 
 	if ( !can_move) {
-		tag = "<td class='calbtn up-img' ><img src='" + bizcalplugindir + "image/up-limit.png' ></td>";
+		tag = "<td class='calbtn up-img' ><img src='" + currentSetting.options.plugindir + "image/up-limit.png' ></td>";
 	}
 	return tag;
 }
