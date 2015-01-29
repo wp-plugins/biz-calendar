@@ -4,7 +4,7 @@ Donate link:
 Tags: calendar,event,widget
 Requires at least: 4.0
 Tested up to: 4.1
-Stable tag: 2.0.0
+Stable tag: 2.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -35,6 +35,9 @@ Biz Calendarは、営業日・イベントカレンダーをウィジェット�
 2. Admin page
 
 == Changelog ==
+
+= 2.0.1 =
+* 特定の環境で祝日ファイルの登録に失敗する不具合を修正しました
 
 = 2.0.0 =
 * 祝日ファイルの登録機能を追加しました

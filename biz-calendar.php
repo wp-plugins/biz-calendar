@@ -3,7 +3,7 @@
  Plugin Name: Biz Calendar
 Plugin URI: http://residentbird.main.jp/bizplugin/
 Description: 営業日・イベントカレンダーをウィジェットに表示するプラグインです。
-Version: 2.0.0
+Version: 2.0.1
 Author:Hideki Tanaka
 Author URI: http://residentbird.main.jp/bizplugin/
 */
@@ -13,7 +13,7 @@ new BizCalendarPlugin();
 
 class BC
 {
-	const VERSION = "2.0.0";
+	const VERSION = "2.0.1";
 	const SHORTCODE = "showpostlist";
 	const OPTIONS = "bizcalendar_options";
 	const NATIONAL_HOLIDAY = "biz_national_holiday";
@@ -141,20 +141,20 @@ class BizCalendarPlugin{
 	private function import_holidays(){
 		$result = new stdClass();
 		if ( $_FILES['holidays-file']['error'] != UPLOAD_ERR_OK ){
-			$result->message = "ファイルアップロードエラーが発生しました";
+			$result->message = "ファイルアップロードエラーが発生しました (ERROR:101)";
 			return $result;
 		}
 		if ( $_FILES['holidays-file']['size'] == 0 || $_FILES['holidays-file']['size'] > 200000 ){
-			$result->message = "不正なファイルです";
+			$result->message = "ファイルアップロードエラーが発生しました (ERROR:201)";
 			return $result;
 		}
-		if ( $_FILES['holidays-file']['type'] != "application/zip" ){
-			$result->message = "不正なファイルです";
+		if ( preg_match('/.*\.zip$/', $_FILES['holidays-file']['name'] ) != 1 ){
+			$result->message = "ファイルアップロードエラーが発生しました (ERROR:202)";
 			return $result;
 		}
 		$content = file_get_contents( $_FILES['holidays-file']['tmp_name'] );
 		if ( empty( $content)){
-			$result->message = "不正なファイルです";
+			$result->message = "ファイルアップロードエラーが発生しました (ERROR:203)";
 			return $result;
 		}
 		$file_name = $_FILES['holidays-file']['name'];
@@ -171,7 +171,7 @@ class BizCalendarPlugin{
 		$content = str_replace( "/\R/", "\n", $content);
 		$holidays = array_filter( explode("\n", $content), array(&$this, 'filter') );
 		if ( !is_array( $holidays) || count( $holidays ) < 10 || count( $holidays ) > 100 ){
-			$result->message = "不正なファイルです";
+			$result->message = "ファイルアップロードエラーが発生しました (ERROR:301)";
 			return $result;
 		}
 		$nh = BC::get_national_holiday();
